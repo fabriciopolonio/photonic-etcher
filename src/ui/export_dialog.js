@@ -120,16 +120,21 @@ const printerModels = {
 
 
 function ExportDialog(props){
+    const defaultPrinterModel = localStorage.getItem("printerModel") ?? Object.entries(printerModels)[0][0];
+    const defaultAnchorCorner = localStorage.getItem("anchorCorner") ?? "TR";
+    const defaultExposureTimes = JSON.parse(localStorage.getItem("exposureTimes")) ?? [];
+    
     const {showDialog, setShowDialog, rootFileName} = props;
     const {layers, enabledLayers, onLayerEnabledChange, invertedLayers} = props;
+    
 
-    const [printerModel, setPrinterModel] = useState(Object.entries(printerModels)[0][0]);
-    const [anchorCorner, setAnchorCorner] = useState("TR");
+    const [printerModel, setPrinterModel] = useState(defaultPrinterModel);
+    const [anchorCorner, setAnchorCorner] = useState(defaultAnchorCorner);
     const [anchorOffset, setAnchorOffset] = useState([0, 0]);
     const [anchorOffsetText, setAnchorOffsetText] = useState(["0.0", "0.0"]);
     const [flipBools, setFlipBools] = useState([false, true, false, false]);
 
-    const [exposureTimes, setExposureTimes] = useState([]);
+    const [exposureTimes, setExposureTimes] = useState(defaultExposureTimes);
 
     const [showPreview, setShowPreview] = useState(false);
     const [previewLoading, setPreviewLoading] = useState(false);
@@ -146,8 +151,20 @@ function ExportDialog(props){
     })
 
     useEffect(() => {
-        setExposureTimes(Array(layers.length).fill(10));
-    }, [layers])
+        localStorage.setItem("printerModel", printerModel);
+    }, [printerModel]);
+
+    useEffect(() => {
+        localStorage.setItem("anchorCorner", anchorCorner);
+    }, [anchorCorner]);
+
+    useEffect(() => {
+        localStorage.setItem("exposureTimes", JSON.stringify(exposureTimes));
+    }, [exposureTimes]);
+
+    useEffect(() => {
+        setExposureTimes(exposureTimes);
+    }, [layers]);
 
     useEffect(() => {
         let newVals = [null, null]
@@ -164,7 +181,7 @@ function ExportDialog(props){
             } catch {}
         }
         setAnchorOffset(newVals);
-    }, [anchorOffsetText])
+    }, [anchorOffsetText]);
 
     const inputsValid = () => {
         if (exposureTimes.reduce((oldVal, current, i) => {
